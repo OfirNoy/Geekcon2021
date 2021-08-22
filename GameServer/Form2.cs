@@ -252,6 +252,11 @@ namespace GameServer
 
     }
 
+    private void Ball_Click(object sender, EventArgs e)
+    {
+
+    }
+
     private void EndGame()
         {
             Player.Location = new Point(0, 75);

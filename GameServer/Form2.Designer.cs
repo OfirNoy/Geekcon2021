@@ -29,8 +29,7 @@
     private void InitializeComponent()
     {
       this.components = new System.ComponentModel.Container();
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-      this.Ball = new System.Windows.Forms.PictureBox();
+      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form2));
       this.label1 = new System.Windows.Forms.Label();
       this.label2 = new System.Windows.Forms.Label();
       this.label3 = new System.Windows.Forms.Label();
@@ -38,26 +37,19 @@
       this.timer1 = new System.Windows.Forms.Timer(this.components);
       this.timer2 = new System.Windows.Forms.Timer(this.components);
       this.timer3 = new System.Windows.Forms.Timer(this.components);
-      this.Player = new System.Windows.Forms.PictureBox();
       this.PC = new System.Windows.Forms.PictureBox();
-      ((System.ComponentModel.ISupportInitialize)(this.Ball)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.Player)).BeginInit();
+      this.Player = new System.Windows.Forms.PictureBox();
+      this.Ball = new System.Windows.Forms.PictureBox();
       ((System.ComponentModel.ISupportInitialize)(this.PC)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.Player)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.Ball)).BeginInit();
       this.SuspendLayout();
-      // 
-      // Ball
-      // 
-      this.Ball.BackColor = System.Drawing.Color.Black;
-      this.Ball.Location = new System.Drawing.Point(227, 120);
-      this.Ball.Name = "Ball";
-      this.Ball.Size = new System.Drawing.Size(15, 15);
-      this.Ball.TabIndex = 2;
-      this.Ball.TabStop = false;
       // 
       // label1
       // 
       this.label1.AutoSize = true;
       this.label1.Font = new System.Drawing.Font("MS Reference Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+      this.label1.ForeColor = System.Drawing.Color.White;
       this.label1.Location = new System.Drawing.Point(163, 9);
       this.label1.Name = "label1";
       this.label1.Size = new System.Drawing.Size(20, 20);
@@ -68,6 +60,7 @@
       // 
       this.label2.AutoSize = true;
       this.label2.Font = new System.Drawing.Font("MS Reference Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+      this.label2.ForeColor = System.Drawing.Color.White;
       this.label2.Location = new System.Drawing.Point(226, 9);
       this.label2.Name = "label2";
       this.label2.Size = new System.Drawing.Size(17, 20);
@@ -78,6 +71,7 @@
       // 
       this.label3.AutoSize = true;
       this.label3.Font = new System.Drawing.Font("MS Reference Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+      this.label3.ForeColor = System.Drawing.Color.White;
       this.label3.Location = new System.Drawing.Point(287, 9);
       this.label3.Name = "label3";
       this.label3.Size = new System.Drawing.Size(20, 20);
@@ -101,7 +95,7 @@
       // 
       // timer2
       // 
-      this.timer2.Interval = 5;
+      this.timer2.Interval = 25;
       this.timer2.Tick += new System.EventHandler(this.MoveBall);
       // 
       // timer3
@@ -109,19 +103,9 @@
       this.timer3.Interval = 5;
       this.timer3.Tick += new System.EventHandler(this.Computer);
       // 
-      // Player
-      // 
-      this.Player.BackColor = System.Drawing.Color.Aqua;
-      this.Player.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-      this.Player.Location = new System.Drawing.Point(0, 75);
-      this.Player.Name = "Player";
-      this.Player.Size = new System.Drawing.Size(30, 90);
-      this.Player.TabIndex = 7;
-      this.Player.TabStop = false;
-      // 
       // PC
       // 
-      this.PC.BackColor = System.Drawing.Color.Red;
+      this.PC.BackColor = System.Drawing.Color.White;
       this.PC.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
       this.PC.Location = new System.Drawing.Point(454, 75);
       this.PC.Name = "PC";
@@ -129,11 +113,32 @@
       this.PC.TabIndex = 8;
       this.PC.TabStop = false;
       // 
-      // Form1
+      // Player
+      // 
+      this.Player.BackColor = System.Drawing.Color.White;
+      this.Player.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+      this.Player.Location = new System.Drawing.Point(0, 75);
+      this.Player.Name = "Player";
+      this.Player.Size = new System.Drawing.Size(30, 90);
+      this.Player.TabIndex = 7;
+      this.Player.TabStop = false;
+      // 
+      // Ball
+      // 
+      this.Ball.BackColor = System.Drawing.Color.White;
+      this.Ball.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+      this.Ball.Location = new System.Drawing.Point(185, 75);
+      this.Ball.Name = "Ball";
+      this.Ball.Size = new System.Drawing.Size(80, 80);
+      this.Ball.TabIndex = 2;
+      this.Ball.TabStop = false;
+      this.Ball.Click += new System.EventHandler(this.Ball_Click);
+      // 
+      // Form2
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-      this.BackColor = System.Drawing.Color.White;
+      this.BackColor = System.Drawing.Color.Black;
       this.ClientSize = new System.Drawing.Size(484, 261);
       this.Controls.Add(this.PC);
       this.Controls.Add(this.Player);
@@ -143,14 +148,14 @@
       this.Controls.Add(this.label1);
       this.Controls.Add(this.Ball);
       this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-      this.Name = "Form1";
+      this.Name = "Form2";
       this.Text = "Pong";
       this.Load += new System.EventHandler(this.Form2_Load);
       this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Pressed);
       this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Released);
-      ((System.ComponentModel.ISupportInitialize)(this.Ball)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.Player)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.PC)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.Player)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.Ball)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
