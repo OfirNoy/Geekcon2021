@@ -23,7 +23,6 @@ namespace GameServer
     VideoCapture capture;
     Mat frameOrig;
     Mat frame;
-    Mat frameBong;
     Bitmap image;
     Thread cameraThread;
     bool isCameraRunning = false;
@@ -37,93 +36,82 @@ namespace GameServer
 
     private void CaptureCamera()
     {
-        cameraThread = new Thread(new ThreadStart(CaptureCameraCallback));
-        cameraThread.Start();
+      cameraThread = new Thread(new ThreadStart(CaptureCameraCallback));
+      cameraThread.Start();
     }
 
     private void CaptureCameraCallback()
     {
 
-        capture = new VideoCapture(0);
-        capture.Open(0);
-        capture.FrameWidth = 1920;
-        capture.FrameHeight = 1080;
+      capture = new VideoCapture(0);
+      capture.Open(0);
+      capture.FrameWidth = 1920;
+      capture.FrameHeight = 1080;
 
-        frameOrig = new Mat();
-        frame = new Mat();
-        frameBong = new Mat();  
+      frameOrig = new Mat();
+      frame = new Mat();
 
-        if (capture.IsOpened())
+      if (capture.IsOpened())
+      {
+        while (isCameraRunning)
         {
-            while (isCameraRunning)
+
+          // read frame from camera
+          capture.Read(frameOrig);
+          // scale down frame
+          Cv2.Resize(frameOrig, frame, new OpenCvSharp.Size(640, 360));
+
+
+          // detect markers
+          //std::vector<int> ids;
+          //std::vector<std::vector<cv::Point2f> > corners;
+          //cv::aruco::detectMarkers(image, dictionary, corners, ids);
+          //using (var undistorted = new Mat())
+          //Cv2.Undistort(image, undistorted, camera, distortion, newCamera);
+          var undistorted = new Mat();
+          CvAruco.DetectMarkers(frame, dictionary, out Point2f[][] corners, out int[] ids, parameters, out Point2f[][] rejected);
+          if (ids.Any())
+          {
+            // detect markers
+            CvAruco.DrawDetectedMarkers(frame, corners, ids);
+
+            // detect markers pose
+            using (var rvecs = new Mat())
+            using (var tvecs = new Mat())
             {
+              CvAruco.EstimatePoseSingleMarkers(corners, 0.065f, cameraMatrix, distCoeffs, rvecs, tvecs);
+              for (var i = 0; i < ids.Length; i++)
+              {
+                var rvec = rvecs.Get<Vec3d>(i);
+                var tvec = tvecs.Get<Vec3d>(i);
 
-                // read frame from camera
-                capture.Read(frameOrig);
-                // scale down frame
-                Cv2.Resize(frameOrig, frame, new OpenCvSharp.Size(640, 360));
-                
-                frameBong = frameOrig.EmptyClone();
-
-
-                // detect markers
-                //std::vector<int> ids;
-                //std::vector<std::vector<cv::Point2f> > corners;
-                //cv::aruco::detectMarkers(image, dictionary, corners, ids);
-                //using (var undistorted = new Mat())
-                //Cv2.Undistort(image, undistorted, camera, distortion, newCamera);
-                var undistorted = new Mat();
-                CvAruco.DetectMarkers(frame, dictionary, out Point2f[][] corners, out int[] ids, parameters, out Point2f[][] rejected);
-                if (ids.Any())
-                {
-                  // detect markers
-                  CvAruco.DrawDetectedMarkers(frame, corners, ids);
-
-                  // detect markers pose
-                  using (var rvecs = new Mat())
-                  using (var tvecs = new Mat())
-                  {
-                      CvAruco.EstimatePoseSingleMarkers(corners, 0.065f, cameraMatrix, distCoeffs, rvecs, tvecs);
-                      for (var i = 0; i < ids.Length; i++)
-                      {
-                          var rvec = rvecs.Get<Vec3d>(i);
-                          var tvec = tvecs.Get<Vec3d>(i);
-
-                          // draw markers pose
-                          CvAruco.DrawAxis(frame, cameraMatrix, distCoeffs, rvec, tvec, 0.05f);
-                          CvAruco.DrawAxis(frameBong, cameraMatrix, distCoeffs, rvec, tvec, 0.05f);
-                      }
-                  }
-
-
-                }
-
-
-                // draw frame on picture
-                image = BitmapConverter.ToBitmap(frame);
-                if (pictureBoxCam.Image != null)
-                {
-                    pictureBoxCam.Image.Dispose();
-                }
-                pictureBoxCam.Image = image;
-
-
-                // draw frame on picture
-                image = BitmapConverter.ToBitmap(frameBong);
-                if (pictureBoxGame.Image != null)
-                {
-                    pictureBoxGame.Image.Dispose();
-                }
-                pictureBoxGame.Image = image;
-
+                // draw markers pose
+                CvAruco.DrawAxis(frame, cameraMatrix, distCoeffs, rvec, tvec, 0.05f);
+                //CvAruco.DrawAxis(frameBong, cameraMatrix, distCoeffs, rvec, tvec, 0.05f);
+              }
             }
+
+
+          }
+
+
+          // draw frame on picture
+          image = BitmapConverter.ToBitmap(frame);
+          if (pictureBoxCam.Image != null)
+          {
+            pictureBoxCam.Image.Dispose();
+          }
+          pictureBoxCam.Image = image;
+
         }
+      }
     }
 
 
     public Form1()
     {
       InitializeComponent();
+      this.KeyPreview = true;
     }
 
     private void Form1_Load(object sender, EventArgs e)
@@ -148,12 +136,6 @@ namespace GameServer
         isCameraRunning = false;
       }
 
-      //DetectMarkers(outputImage);
-    }
-
-    private void pictureBoxCam_Click(object sender, EventArgs e)
-    {
-
     }
 
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -163,13 +145,9 @@ namespace GameServer
       //capture.Release();
 
       //exit application
-       Environment.Exit(0);
+      Environment.Exit(0);
     }
 
-    private void button2_Click(object sender, EventArgs e)
-    {
-      //form2 = new Form2()
-    }
 
     /*
     private async Task DetectMarkers()
@@ -281,6 +259,263 @@ namespace GameServer
         //Cv2.Line(image, imagePoints.Get<Point2f>(0), imagePoints.Get<Point2f>(3), new Scalar(255, 0, 0), 3);
     }
     */
+
+    const int limit_Pad = 170;
+    const int limit_Ball = 245;
+    const int x = 227, y = 120;
+
+    int computer_won = 0;
+    int player_won = 0;
+
+    int speed_Top;
+    int speed_Left;
+
+    bool up = false;
+    bool down = false;
+    bool game = false;
+
+    Random r = new Random();
+
+    private int getLimitTop()
+    {
+      return pictureBoxGame.Top;
+    }
+    private int getLimitBottom()
+    {
+      return pictureBoxGame.Height - pictureBoxGame.Top;
+    }
+    private int getLimitRight()
+    {
+      return pictureBoxGame.Left + pictureBoxGame.Width;
+    }
+
+    private void Pressed(object sender, KeyEventArgs e)
+    {
+      if (game)
+      {
+        if (e.KeyCode == Keys.Up || e.KeyCode == Keys.W)
+        {
+          up = true;
+        }
+        else if (e.KeyCode == Keys.Down || e.KeyCode == Keys.S)
+        {
+          down = true;
+        }
+        timer1.Start();
+      }
+    }
+    private void MovePaddle(object sender, EventArgs e)
+    {
+      if (up && Player.Location.Y > getLimitTop())
+      {
+        Player.Top -= 3;
+      }
+      else if (down && Player.Location.Y < getLimitBottom() - Player.Height)
+      {
+        Player.Top += 3;
+      }
+    }
+    private void Released(object sender, KeyEventArgs e)
+    {
+      if (e.KeyCode == Keys.Up || e.KeyCode == Keys.W)
+      {
+        up = false;
+      }
+      else if (e.KeyCode == Keys.Up || e.KeyCode == Keys.S)
+      {
+        down = false;
+      }
+      timer1.Stop();
+    }
+    private void MoveBall(object sender, EventArgs e)
+    {
+      if (Ball.Bounds.IntersectsWith(Player.Bounds))
+      {
+        Collision(Player);
+      }
+      else if (Ball.Bounds.IntersectsWith(PC.Bounds))
+      {
+        Collision(PC);
+      }
+      HitBorder();
+      BallLeftField();
+      BallMoves();
+    }
+    private void Collision(PictureBox Paddle)
+    {
+      switch (true)
+      {
+        case true when Upper(Paddle):
+          speed_Top = Negative(4, 6);
+          speed_Left = AdjustCoordinates(5, 6);
+          break;
+        case true when High(Paddle):
+          speed_Top = Negative(2, 3);
+          speed_Left = AdjustCoordinates(6, 7);
+          break;
+        case true when Middle(Paddle):
+          speed_Top = 0;
+          speed_Left = AdjustCoordinates(5, 5);
+          break;
+        case true when Low(Paddle):
+          speed_Top = r.Next(2, 3);
+          speed_Left = AdjustCoordinates(6, 7);
+          break;
+        case true when Bot(Paddle):
+          speed_Top = r.Next(4, 6);
+          speed_Left = AdjustCoordinates(5, 6);
+          break;
+      }
+      Edge();
+    }
+    private int AdjustCoordinates(int i, int n)
+    {
+      int res = 0;
+
+      if (Ball.Location.X < getLimitRight() / 2)
+      {
+        res = r.Next(i, n);
+      }
+      else if (Ball.Location.X > getLimitRight() / 2)
+      {
+        res = Negative(i, n);
+      }
+      return res;
+    }
+    private int Negative(int i, int n)
+    {
+      int myval = r.Next(i, n) * -1;
+      return myval;
+    }
+    private bool Upper(PictureBox Pad)
+    {
+      return Ball.Location.Y >= Pad.Top - Ball.Height && Ball.Location.Y <= Pad.Top + Ball.Height;
+    }
+    private bool High(PictureBox Pad)
+    {
+      return Ball.Location.Y > Pad.Top + Ball.Height && Ball.Location.Y <= Pad.Top + 2 * Ball.Height;
+    }
+    private bool Middle(PictureBox Pad)
+    {
+      return Ball.Location.Y > Pad.Top + 2 * Ball.Height && Ball.Location.Y <= Pad.Top + 3 * Ball.Height;
+    }
+    private bool Low(PictureBox Pad)
+    {
+      return Ball.Location.Y > Pad.Top + 3 * Ball.Height && Ball.Location.Y <= Pad.Top + 4 * Ball.Height;
+    }
+    private bool Bot(PictureBox Pad)
+    {
+      return Ball.Location.Y > Pad.Top + 4 * Ball.Height && Ball.Location.Y <= Pad.Bottom + Ball.Height;
+    }
+    private void HitBorder()
+    {
+      if (Ball.Location.Y <= 0 || Ball.Location.Y >= limit_Ball)
+      {
+        speed_Top *= -1;
+      }
+    }
+    private void BallLeftField()
+    {
+      if (player_won == 10 || computer_won == 10)
+      {
+        EndGame();
+      }
+
+      if (Ball.Location.X < 0 - Player.Width && Ball.Location.X < getLimitRight() / 2)
+      {
+        NewPoint(5);
+        ComputerWon();
+      }
+      else if (Ball.Location.X > PC.Location.X + PC.Width && Ball.Location.X > getLimitRight() / 2)
+      {
+        NewPoint(-5);
+        PlayerWon();
+      }
+    }
+    private void Edge()
+    {
+      if (Ball.Location.X < getLimitRight() / 2)
+      {
+        if (Ball.Location.X < 0 + Ball.Height / 3)
+        {
+          speed_Left *= -1;
+        }
+      }
+      else if (Ball.Location.X > getLimitRight() / 2)
+      {
+        if (Ball.Location.X > PC.Location.X + (Ball.Width / 3))
+        {
+          speed_Left *= -1;
+        }
+      }
+    }
+    private void NewPoint(int n)
+    {
+      Ball.Location = new System.Drawing.Point(x, y);
+      speed_Top = 0;
+      speed_Left = n;
+    }
+    private void StartValues()
+    {
+      speed_Top = 0;
+      speed_Left = -5;
+    }
+    private void BallMoves()
+    {
+      Ball.Top += speed_Top;
+      Ball.Left += speed_Left;
+    }
+    private void Computer(object sender, EventArgs e)
+    {
+      if (PC.Location.Y <= 0)
+      {
+        PC.Location = new System.Drawing.Point(PC.Location.X, 0);
+      }
+      else if (PC.Location.Y >= limit_Pad)
+      {
+        PC.Location = new System.Drawing.Point(PC.Location.X, limit_Pad);
+      }
+      if (Ball.Location.Y < PC.Top + (PC.Height / 2))
+      {
+        PC.Top -= 3;
+      }
+      else if (Ball.Location.Y > PC.Top + (PC.Height / 2))
+      {
+        PC.Top += 3;
+      }
+    }
+    private void PlayerWon()
+    {
+      player_won++;
+      label1.Text = player_won.ToString();
+    }
+    private void ComputerWon()
+    {
+      computer_won++;
+      label3.Text = computer_won.ToString();
+    }
+    private void button2_Click(object sender, EventArgs e)
+    {
+      StartValues();
+      game = true;
+      timer1.Start();
+      timer2.Start();
+      timer3.Start();
+    }
+
+    private void EndGame()
+    {
+      Player.Location = new System.Drawing.Point(0, 75);
+      PC.Location = new System.Drawing.Point(454, 75);
+      game = false;
+      player_won = 0;
+      computer_won = 0;
+      label1.Text = player_won.ToString();
+      label3.Text = computer_won.ToString();
+      timer1.Stop();
+      timer2.Stop();
+      timer3.Stop();
+    }
 
   }
 }
