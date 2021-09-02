@@ -116,23 +116,24 @@ namespace GameServer
 
     private void Form1_Load(object sender, EventArgs e)
     {
-
+      labelHelp.Text = "left up Q down A"; 
+      labelHelp.Text += "\nright up P down L"; 
     }
 
 
     // When the user clicks on the start/stop button, start or release the camera and setup flags
     private void button1_Click(object sender, EventArgs e)
     {
-      if (button1.Text.Equals("Start"))
+      if (btnStartCam.Text.Equals("Start"))
       {
         CaptureCamera();
-        button1.Text = "Stop";
+        btnStartCam.Text = "Stop";
         isCameraRunning = true;
       }
       else
       {
         capture.Release();
-        button1.Text = "Start";
+        btnStartCam.Text = "Start";
         isCameraRunning = false;
       }
 
@@ -264,14 +265,17 @@ namespace GameServer
     const int limit_Ball = 245;
     const int x = 227, y = 120;
 
-    int computer_won = 0;
+    int player_right_won = 0;
     int player_won = 0;
 
     int speed_Top;
     int speed_Left;
 
-    bool up = false;
-    bool down = false;
+    bool leftUp = false;
+    bool leftDown = false;
+    bool rightUp = false;
+    bool rightDown = false;
+
     bool game = false;
 
     Random r = new Random();
@@ -289,53 +293,94 @@ namespace GameServer
       return pictureBoxGame.Left + pictureBoxGame.Width;
     }
 
+    // key pressed event
     private void Pressed(object sender, KeyEventArgs e)
     {
-      if (game)
+
+      // left paddle
+      if (e.KeyCode == Keys.Q)
       {
-        if (e.KeyCode == Keys.Up || e.KeyCode == Keys.W)
-        {
-          up = true;
-        }
-        else if (e.KeyCode == Keys.Down || e.KeyCode == Keys.S)
-        {
-          down = true;
-        }
-        timer1.Start();
+        leftUp = true;
       }
+      else if (e.KeyCode == Keys.A)
+      {
+        leftDown = true;
+      }
+
+      // right paddle
+      if (e.KeyCode == Keys.Up || e.KeyCode == Keys.P)
+      {
+        rightUp = true;
+      }
+      else if (e.KeyCode == Keys.Down || e.KeyCode == Keys.L)
+      {
+        rightDown = true;
+      }
+
+      timerLeftPaddle.Start();
+      timerRightPaddle.Start();
     }
-    private void MovePaddle(object sender, EventArgs e)
-    {
-      if (up && Player.Location.Y > getLimitTop())
-      {
-        Player.Top -= 3;
-      }
-      else if (down && Player.Location.Y < getLimitBottom() - Player.Height)
-      {
-        Player.Top += 3;
-      }
-    }
+
+    // key released event
     private void Released(object sender, KeyEventArgs e)
     {
-      if (e.KeyCode == Keys.Up || e.KeyCode == Keys.W)
+      if (e.KeyCode == Keys.Q)
       {
-        up = false;
+        leftUp = false;
       }
-      else if (e.KeyCode == Keys.Up || e.KeyCode == Keys.S)
+      else if (e.KeyCode == Keys.A)
       {
-        down = false;
+        leftDown = false;
       }
-      timer1.Stop();
+
+      if (e.KeyCode == Keys.Up || e.KeyCode == Keys.P)
+      {
+        rightUp = false;
+      }
+      else if (e.KeyCode == Keys.Up || e.KeyCode == Keys.L)
+      {
+        rightDown = false;
+      }
+
+      timerLeftPaddle.Stop();
+      timerRightPaddle.Stop();
     }
+
+    private void timerLeftPaddle_Tick(object sender, EventArgs e)
+    {
+      if (leftUp && PlayerLeft.Location.Y > getLimitTop())
+      {
+        PlayerLeft.Top -= 3;
+      }
+      else if (leftDown && PlayerLeft.Location.Y < getLimitBottom() - PlayerLeft.Height)
+      {
+        PlayerLeft.Top += 3;
+      }
+    }
+
+    private void timerRightPaddle_Tick(object sender, EventArgs e)
+    {
+      if (rightUp && PlayerRight.Location.Y > getLimitTop())
+      {
+        PlayerRight.Top -= 3;
+      }
+      else if (rightDown && PlayerRight.Location.Y < getLimitBottom() - PlayerRight.Height)
+      {
+        PlayerRight.Top += 3;
+      }
+    }
+
+
+
     private void MoveBall(object sender, EventArgs e)
     {
-      if (Ball.Bounds.IntersectsWith(Player.Bounds))
+      if (Ball.Bounds.IntersectsWith(PlayerLeft.Bounds))
       {
-        Collision(Player);
+        Collision(PlayerLeft);
       }
-      else if (Ball.Bounds.IntersectsWith(PC.Bounds))
+      else if (Ball.Bounds.IntersectsWith(PlayerRight.Bounds))
       {
-        Collision(PC);
+        Collision(PlayerRight);
       }
       HitBorder();
       BallLeftField();
@@ -416,20 +461,20 @@ namespace GameServer
     }
     private void BallLeftField()
     {
-      if (player_won == 10 || computer_won == 10)
+      if (player_won == 10 || player_right_won == 10)
       {
         EndGame();
       }
 
-      if (Ball.Location.X < 0 - Player.Width && Ball.Location.X < getLimitRight() / 2)
+      if (Ball.Location.X < 0 - PlayerLeft.Width && Ball.Location.X < getLimitRight() / 2)
       {
         NewPoint(5);
-        ComputerWon();
+        PlayerRightWon();
       }
-      else if (Ball.Location.X > PC.Location.X + PC.Width && Ball.Location.X > getLimitRight() / 2)
+      else if (Ball.Location.X > PlayerRight.Location.X + PlayerRight.Width && Ball.Location.X > getLimitRight() / 2)
       {
         NewPoint(-5);
-        PlayerWon();
+        PlayerLeftWon();
       }
     }
     private void Edge()
@@ -443,7 +488,7 @@ namespace GameServer
       }
       else if (Ball.Location.X > getLimitRight() / 2)
       {
-        if (Ball.Location.X > PC.Location.X + (Ball.Width / 3))
+        if (Ball.Location.X > PlayerRight.Location.X + (Ball.Width / 3))
         {
           speed_Left *= -1;
         }
@@ -467,54 +512,79 @@ namespace GameServer
     }
     private void Computer(object sender, EventArgs e)
     {
-      if (PC.Location.Y <= 0)
+      if (chkComputer.Checked)
       {
-        PC.Location = new System.Drawing.Point(PC.Location.X, 0);
+        if (PlayerRight.Location.Y <= 0)
+        {
+          PlayerRight.Location = new System.Drawing.Point(PlayerRight.Location.X, 0);
+        }
+        else if (PlayerRight.Location.Y >= limit_Pad)
+        {
+          PlayerRight.Location = new System.Drawing.Point(PlayerRight.Location.X, limit_Pad);
+        }
+        if (Ball.Location.Y < PlayerRight.Top + (PlayerRight.Height / 2))
+        {
+          PlayerRight.Top -= 3;
+        }
+        else if (Ball.Location.Y > PlayerRight.Top + (PlayerRight.Height / 2))
+        {
+          PlayerRight.Top += 3;
+        }
       }
-      else if (PC.Location.Y >= limit_Pad)
-      {
-        PC.Location = new System.Drawing.Point(PC.Location.X, limit_Pad);
-      }
-      if (Ball.Location.Y < PC.Top + (PC.Height / 2))
-      {
-        PC.Top -= 3;
-      }
-      else if (Ball.Location.Y > PC.Top + (PC.Height / 2))
-      {
-        PC.Top += 3;
-      }
+
     }
-    private void PlayerWon()
+    private void PlayerLeftWon()
     {
       player_won++;
-      label1.Text = player_won.ToString();
+      labelLeftScore.Text = player_won.ToString();
     }
-    private void ComputerWon()
+    private void PlayerRightWon()
     {
-      computer_won++;
-      label3.Text = computer_won.ToString();
+      player_right_won++;
+      labelRightScore.Text = player_right_won.ToString();
     }
     private void button2_Click(object sender, EventArgs e)
     {
       StartValues();
       game = true;
-      timer1.Start();
-      timer2.Start();
-      timer3.Start();
+      timerLeftPaddle.Start();
+      timerRightPaddle.Start();
+      timerBall.Start();
+      timerComputer.Start();
+    }
+
+    private void pictureBoxGame_Paint(object sender, PaintEventArgs e)
+    {
+      int penWidth = 4;
+      // draw middle dashed line
+      using (Pen pen = new Pen(Color.White, penWidth) )
+      {
+          pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+          e.Graphics.DrawLine(pen,new PointF(pictureBoxGame.Width/2,0), new PointF(pictureBoxGame.Width/2, pictureBoxGame.Height));
+      }
+
+      // draw rectangle
+      Rectangle rect = new Rectangle(0,0,pictureBoxGame.Width-penWidth,pictureBoxGame.Height-penWidth);
+      using (Pen pen = new Pen(Color.White, penWidth) )
+      {
+          e.Graphics.DrawRectangle(pen,rect);
+      }
+
     }
 
     private void EndGame()
     {
-      Player.Location = new System.Drawing.Point(0, 75);
-      PC.Location = new System.Drawing.Point(454, 75);
+      PlayerLeft.Location = new System.Drawing.Point(0, 75);
+      PlayerRight.Location = new System.Drawing.Point(454, 75);
       game = false;
       player_won = 0;
-      computer_won = 0;
-      label1.Text = player_won.ToString();
-      label3.Text = computer_won.ToString();
-      timer1.Stop();
-      timer2.Stop();
-      timer3.Stop();
+      player_right_won = 0;
+      labelLeftScore.Text = player_won.ToString();
+      labelRightScore.Text = player_right_won.ToString();
+      timerLeftPaddle.Stop();
+      timerRightPaddle.Stop();
+      timerBall.Stop();
+      timerComputer.Stop();
     }
 
   }
