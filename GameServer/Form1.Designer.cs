@@ -29,7 +29,6 @@
     private void InitializeComponent()
     {
       this.components = new System.ComponentModel.Container();
-      this.btnStartCam = new System.Windows.Forms.Button();
       this.btnStart = new System.Windows.Forms.Button();
       this.timerLeftPaddle = new System.Windows.Forms.Timer(this.components);
       this.timerBall = new System.Windows.Forms.Timer(this.components);
@@ -45,6 +44,8 @@
       this.timerRightPaddle = new System.Windows.Forms.Timer(this.components);
       this.labelHelp = new System.Windows.Forms.Label();
       this.chkComputer = new System.Windows.Forms.CheckBox();
+      this.lblError = new System.Windows.Forms.Label();
+      this.chkLive = new System.Windows.Forms.CheckBox();
       ((System.ComponentModel.ISupportInitialize)(this.PlayerRight)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.PlayerLeft)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.Ball)).BeginInit();
@@ -53,19 +54,9 @@
       ((System.ComponentModel.ISupportInitialize)(this.pictureBoxCam)).BeginInit();
       this.SuspendLayout();
       // 
-      // btnStartCam
-      // 
-      this.btnStartCam.Location = new System.Drawing.Point(7, 377);
-      this.btnStartCam.Name = "btnStartCam";
-      this.btnStartCam.Size = new System.Drawing.Size(80, 26);
-      this.btnStartCam.TabIndex = 2;
-      this.btnStartCam.Text = "Start Camera";
-      this.btnStartCam.UseVisualStyleBackColor = true;
-      this.btnStartCam.Click += new System.EventHandler(this.button1_Click);
-      // 
       // btnStart
       // 
-      this.btnStart.Location = new System.Drawing.Point(111, 377);
+      this.btnStart.Location = new System.Drawing.Point(9, 378);
       this.btnStart.Name = "btnStart";
       this.btnStart.Size = new System.Drawing.Size(80, 26);
       this.btnStart.TabIndex = 13;
@@ -80,7 +71,6 @@
       // 
       // timerBall
       // 
-      this.timerBall.Interval = 25;
       this.timerBall.Tick += new System.EventHandler(this.MoveBall);
       // 
       // timerComputer
@@ -180,7 +170,7 @@
       // 
       this.labelHelp.AutoSize = true;
       this.labelHelp.ForeColor = System.Drawing.Color.White;
-      this.labelHelp.Location = new System.Drawing.Point(197, 377);
+      this.labelHelp.Location = new System.Drawing.Point(146, 377);
       this.labelHelp.Name = "labelHelp";
       this.labelHelp.Size = new System.Drawing.Size(47, 13);
       this.labelHelp.TabIndex = 22;
@@ -197,12 +187,36 @@
       this.chkComputer.Text = "Right Player Computer";
       this.chkComputer.UseVisualStyleBackColor = true;
       // 
+      // lblError
+      // 
+      this.lblError.AutoSize = true;
+      this.lblError.ForeColor = System.Drawing.Color.White;
+      this.lblError.Location = new System.Drawing.Point(485, 377);
+      this.lblError.Name = "lblError";
+      this.lblError.Size = new System.Drawing.Size(48, 13);
+      this.lblError.TabIndex = 24;
+      this.lblError.Text = "error text";
+      // 
+      // chkLive
+      // 
+      this.chkLive.AutoSize = true;
+      this.chkLive.ForeColor = System.Drawing.Color.White;
+      this.chkLive.Location = new System.Drawing.Point(6, 426);
+      this.chkLive.Name = "chkLive";
+      this.chkLive.Size = new System.Drawing.Size(46, 17);
+      this.chkLive.TabIndex = 25;
+      this.chkLive.Text = "Live";
+      this.chkLive.UseVisualStyleBackColor = true;
+      this.chkLive.CheckedChanged += new System.EventHandler(this.chkLive_CheckedChanged);
+      // 
       // Form1
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.BackColor = System.Drawing.Color.Black;
       this.ClientSize = new System.Drawing.Size(1295, 450);
+      this.Controls.Add(this.chkLive);
+      this.Controls.Add(this.lblError);
       this.Controls.Add(this.chkComputer);
       this.Controls.Add(this.labelHelp);
       this.Controls.Add(this.labelRightScore);
@@ -212,7 +226,6 @@
       this.Controls.Add(this.Ball);
       this.Controls.Add(this.btnStart);
       this.Controls.Add(this.pictureBox1);
-      this.Controls.Add(this.btnStartCam);
       this.Controls.Add(this.pictureBoxGame);
       this.Controls.Add(this.pictureBoxCam);
       this.Name = "Form1";
@@ -236,7 +249,6 @@
 
     private System.Windows.Forms.PictureBox pictureBoxCam;
     private System.Windows.Forms.PictureBox pictureBoxGame;
-    private System.Windows.Forms.Button btnStartCam;
     private System.Windows.Forms.PictureBox pictureBox1;
     private System.Windows.Forms.Button btnStart;
     private System.Windows.Forms.Timer timerLeftPaddle;
@@ -250,6 +262,8 @@
     private System.Windows.Forms.Timer timerRightPaddle;
     private System.Windows.Forms.Label labelHelp;
     private System.Windows.Forms.CheckBox chkComputer;
+    private System.Windows.Forms.Label lblError;
+    private System.Windows.Forms.CheckBox chkLive;
   }
 }
 
